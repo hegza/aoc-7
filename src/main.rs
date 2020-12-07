@@ -44,31 +44,24 @@ fn main() -> anyhow::Result<()> {
         }
     }
 
-    // Visit all rules
-    let mut shiny_count = 0;
-    for (outer_color, _contents) in &rules {
-        if can_contain_shiny(outer_color, &rules) {
-            shiny_count += 1;
-        }
-    }
-
-    println!("{}", shiny_count);
+    // Figure out how many bags there are in the shiny gold bag
+    let bag_count = count_bags("shiny gold", &rules);
+    println!("{}", bag_count);
 
     Ok(())
 }
 
-fn can_contain_shiny(outer_color: &str, rules: &HashMap<String, Vec<(String, i64)>>) -> bool {
+/// Counts how many bags there are in the given bag
+fn count_bags(outer_color: &str, rules: &HashMap<String, Vec<(String, i64)>>) -> i64 {
     match rules.get(outer_color) {
-        Some(contents) if contents.iter().any(|(color, _count)| color == "shiny gold") => true,
+        None => 0,
         Some(contents) => {
-            for (color, _count) in contents {
-                if can_contain_shiny(color, &rules) {
-                    return true;
-                }
+            let mut this_count = 0;
+            for (color, inner_count) in contents {
+                this_count += inner_count;
+                this_count += inner_count * count_bags(color, &rules);
             }
-            false
+            this_count
         }
-        // Bags with no contents cannot contain a shiny gold
-        None => false,
     }
 }
