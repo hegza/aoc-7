@@ -1,4 +1,3 @@
-use anyhow::{bail, Context};
 use itertools::{self, Itertools};
 use std::collections::HashMap;
 use std::fs;
@@ -8,15 +7,17 @@ fn main() -> anyhow::Result<()> {
 
     let mut lines = f.lines();
 
-    // Key: color, value: Vec<(color, count)>
+    // Key: outer color, Value: Vec<(inner color, count)>
     let mut rules = HashMap::new();
 
+    // Parse input into rules like "outer color can contain [N inner color..]"
     while let Some(line) = lines.next() {
         let mut words = line.split_whitespace();
 
+        // Take the first two words and join them into the outer color
         let outer_color = words.by_ref().take(2).join(" ");
 
-        // Skip "bags", "contain"
+        // Skip the next two words: "bags", "contain"
         let mut words = words.skip(2);
 
         loop {
@@ -27,6 +28,7 @@ fn main() -> anyhow::Result<()> {
                 number => {
                     let count = number.parse::<i64>().unwrap();
 
+                    // Take the next to words and join them into the inner color
                     let inner_color = words.by_ref().take(2).join(" ");
 
                     let rule = rules.entry(outer_color.clone()).or_insert(vec![]);
